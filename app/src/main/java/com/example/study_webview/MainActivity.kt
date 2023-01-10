@@ -1,6 +1,7 @@
 package com.example.study_webview
 
 import android.os.Bundle
+import android.util.Log
 import android.webkit.JsResult
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -9,6 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    private val TAG = MainActivity::class.java.simpleName
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -22,10 +26,19 @@ class MainActivity : AppCompatActivity() {
         // 载入JS代码
         // 本地格式规定为:file:///android_asset/文件名.html。服务器文件可以直接将url写入
         webView.loadUrl("file:///android_asset/javascript.html")
+        // 方式1: version<4.4 loadUrl
         button_loadUrl.setOnClickListener {
             // 通过Handler发送消息
             webView.post {
                 webView?.loadUrl("javascript:callJS()")  // 调用javascript的callJS()方法, 注意调用的JS方法名要对应上
+            }
+        }
+        // 方式2: version>=4.4 evaluateJavascript
+        button_evaluateJS.setOnClickListener {
+            webView.post {
+                webView?.evaluateJavascript("javascript:callJS()") { resultCallback -> // 此处为js return的结果
+                    Log.d(TAG, resultCallback)
+                }
             }
         }
 
@@ -67,5 +80,7 @@ class MainActivity : AppCompatActivity() {
             AndroidToJS(),
             "androidToJs"
         ) //AndroidToJS类对象映射到js的androidToJs对象
+
+
     }
 }
