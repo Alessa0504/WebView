@@ -1,10 +1,12 @@
 package com.example.study_webview
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.webkit.JsResult
 import android.webkit.WebChromeClient
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -73,14 +75,42 @@ class MainActivity : AppCompatActivity() {
         }
         // ---- Android调用Js 完 ----
 
-        // ---- todo Js调用Android ----
-        // 通过addJavascriptInterface()将Java对象映射到JS对象
+        // ---- Js调用Android ----
+        // 方式1 -通过addJavascriptInterface()将Java对象映射到JS对象
         // 参数1：Java对象名, 参数2：Javascript对象名
         webView.addJavascriptInterface(
-            AndroidToJS(),
-            "androidToJs"
+            JsToAndroid(),
+            "jsToAndroid"
         ) //AndroidToJS类对象映射到js的androidToJs对象
 
-
+        // 方式2 -通过 WebViewClient的方法shouldOverrideUrlLoading()回调拦截url
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                // 步骤1. 根据协议的参数，判断是否是所需要的url
+                // 一般根据scheme(协议格式) & authority(协议名)判断 (前两个参数)
+                // 假定传入进来的 url = "js://webview?arg1=111&arg2=222" (同时也是约定好的需要拦截的)
+                val uri = Uri.parse(url)
+                // 如果url的协议 == 预先约定的 js 协议, 就解析往下解析参数
+                if (uri.scheme == "js") {
+                    // 如果 authority == 预先约定协议里的 webview，即代表都符合约定的协议
+                    // 所以拦截url,下面js开始调用Android需要的方法
+                    if (uri.authority == "webview") {
+                        // 步骤2. 执行js所需要调用Android的逻辑
+                        println("js调用了Android的方法")
+                        // 可以在协议上带有参数并传递到Android上
+                        val parameterNames = uri.queryParameterNames
+                        Log.d(
+                            TAG,
+                            "params =${uri.getQueryParameter(parameterNames.elementAt(0))} , ${
+                                uri.getQueryParameter(parameterNames.elementAt(1))
+                            }"
+                        )
+                    }
+                    return true  // 这里必须返回true表示Android端拦截了url
+                }
+                return super.shouldOverrideUrlLoading(view, url)
+            }
+        }
+        // ---- Js调用Android 完 ----
     }
 }

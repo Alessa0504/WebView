@@ -1,61 +1,53 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="utf-8">
-    <title>Carson_Ho</title>
+    <head>
+        <meta charset="utf-8">
+        <title>Carson_Ho</title>
 
-    <script>
-    <!-- Android调用JS代码 -->
-   function callJS(){
-      alert("callJs method is invoked from Javascript.html");
-      return "js返回的数据";
-   }
+        <script>
+        <!-- Android调用JS代码 -->
+       function callJS(){
+          alert("callJs method is invoked from Javascript.html");
+          return "js返回的数据";
+       }
 
-   <!--
-   // JavaScript调用Android的方法1--对象映射
-   //对象映射，调用映射的androidToJs对象等于调用AndroidToJS对象
-   -->
-   function callAndroid1(){
-            androidToJs.hello("js调用android中的hello方法");
-         }
+    <!--   JavaScript调用Android的方式1：对象映射 -->
+    <!--   对象映射，调用映射的jsToAndroid对象等于调用JsToAndroid对象 -->
+       function callAndroid1(){
+            jsToAndroid.hello("js调用android中的hello方法");
+       }
 
-    <!--
-   // JavaScript调用Android的方法
-   ///*约定的url协议为：js://webview?arg1=111&arg2=222*/
-   -->
-   function callAndroid2(){
-        document.location = "js://webview?arg1=111&arg2=222";
-   }
+    <!--    JavaScript调用Android的方式2：通过 WebViewClient的方法shouldOverrideUrlLoading()回调拦截url -->
+    <!--    在js约定所需要的Url协议, 约定的url协议为：js://webview?arg1=111&arg2=222 -->
+       function callAndroid2(){
+            document.location = "js://webview?arg1=111&arg2=222";
+       }
 
-   <!--
-   // 调用prompt（）
-   -->
-   function callAndroid3(){
-    var result=prompt("js://webview?arg1=111&arg2=222");
-    alert("demo " + result);
-    }
+       <!-- 调用prompt() -->
+       function callAndroid3(){
+            var result = prompt("js://webview?arg1=111&arg2=222");
+            alert("demo " + result);
+       }
 
-    </script>
+        </script>
+    </head>
 
+    <!-- 点击按钮则调用script中定义的函数函数 -->
+    <body>
+        <button type="button" id="btn1" onClick="callAndroid1()" style="height:50px;width:100px">
+            JsCallAndroid1
+        </button>
 
-</head>
+        <button type="button" id="btn2" onClick="callAndroid2()" style="height:50px;width:100px">
+            JsCallAndroid2
+        </button>
 
-<!-- 点击按钮则调用script中定义的函数函数 -->
-<body>
-<button type="button" id="btn1" onClick="callAndroid1()" style="height:50px;width:100px">
-    JsCallAndroid1
-</button>
+    <!--<button type="button" id="btn3" onClick="callAndroid3()" style="height:50px;width:100px">-->
+    <!--    JsCallAndroid3-->
+    <!--</button>-->
 
-<button type="button" id="btn2" onClick="callAndroid2()" style="height:50px;width:100px">
-    JsCallAndroid2
-</button>
-
-<button type="button" id="btn3" onClick="callAndroid3()" style="height:50px;width:100px">
-    JsCallAndroid3
-</button>
-
-</body>
+    </body>
 
 </html>
 
