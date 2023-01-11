@@ -3,10 +3,7 @@ package com.example.study_webview
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.webkit.JsResult
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -72,16 +69,48 @@ class MainActivity : AppCompatActivity() {
                 return true  // 方法的返回值设置true，会拦截系统的弹窗
 //                return super.onJsAlert(view, url, message, result)
             }
-        }
-        // ---- Android调用Js 完 ----
+            // ---- Android调用Js 完 ----
 
-        // ---- Js调用Android ----
+            // ---- Js调用Android 方式3 ----
+            // 方式3 -通过WebChromeClient拦截
+            override fun onJsPrompt(
+                view: WebView?,
+                url: String?,
+                message: String?,
+                defaultValue: String?,
+                result: JsPromptResult?
+            ): Boolean {
+                // 根据协议的参数，判断是否是所需要的url(同方式2)
+                val uri = Uri.parse(message)   // 注意这里传入的是message不是url
+                if (uri.scheme == "js") {
+                    // 拦截url,下面js开始调用Android需要的方法
+                    if (uri.authority == "android") {
+                        println("js调用了Android的方法")
+                        // 可以在协议上带有参数并传递到Android上
+                        val parameterNames = uri.queryParameterNames
+                        Log.d(
+                            TAG,
+                            "params =${uri.getQueryParameter(parameterNames.elementAt(0))} , ${
+                                uri.getQueryParameter(parameterNames.elementAt(1))
+                            }"
+                        )
+                        // 参数result代表消息框的返回值(输入值)
+                        result?.confirm("js调用Android的方法成功啦")  // result会传入js的alert("demo " + result); 又由于alert被拦截，会触发onJsAlert
+                    }
+                    return true
+                }
+                return super.onJsPrompt(view, url, message, defaultValue, result)
+            }
+            // ---- Js调用Android 方式3 完 ----
+        }
+
+        // ---- Js调用Android 方式1&2 ----
         // 方式1 -通过addJavascriptInterface()将Java对象映射到JS对象
         // 参数1：Java对象名, 参数2：Javascript对象名
         webView.addJavascriptInterface(
             JsToAndroid(),
             "jsToAndroid"
-        ) //AndroidToJS类对象映射到js的androidToJs对象
+        ) // JsToAndroid类对象映射到js的jsToAndroid对象
 
         // 方式2 -通过 WebViewClient的方法shouldOverrideUrlLoading()回调拦截url
         webView.webViewClient = object : WebViewClient() {
@@ -111,6 +140,6 @@ class MainActivity : AppCompatActivity() {
                 return super.shouldOverrideUrlLoading(view, url)
             }
         }
-        // ---- Js调用Android 完 ----
+        // ---- Js调用Android 方式1&2 完 ----
     }
 }
