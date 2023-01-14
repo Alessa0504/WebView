@@ -1,9 +1,13 @@
 package com.example.study_webview
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
+import android.view.View
 import android.webkit.*
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -20,6 +24,18 @@ class MainActivity : AppCompatActivity() {
         val webSettings = webView.settings
         webSettings.javaScriptEnabled = true    // 设置与Js交互的权限
         webSettings.javaScriptCanOpenWindowsAutomatically = true    // 设置允许JS弹窗
+
+        /**
+         * LOAD_CACHE_ONLY: 不使用网络，只读取本地缓存数据
+         * LOAD_DEFAULT: （默认）根据cache-control决定是否从网络上取数据。
+         * LOAD_NO_CACHE: 不使用缓存，只从网络获取数据.
+         * LOAD_CACHE_ELSE_NETWORK，只要本地有，无论是否过期，或者no-cache，都使用缓存中的数据。
+         */
+        webSettings.cacheMode = WebSettings.LOAD_NO_CACHE //不使用缓存，只从网络获取数据.
+
+        //支持屏幕缩放
+        webSettings.setSupportZoom(true)
+        webSettings.builtInZoomControls = true
 
         // ---- Android调用Js ----
         // 载入JS代码
@@ -42,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 需要支持js对话框, 通过设置WebChromeClient对象处理JavaScript的对话框,设置响应js的Alert()函数
-        // webview只是载体，内容的渲染需要使用webviewChromeClient类去实现
+        // webview只是载体，内容的渲染需要使用webviewChromeClient类去实现。WebChromeClient主要辅助WebView处理Javascript的对话框、网站图标、网站title、加载进度等
         webView.webChromeClient = object : WebChromeClient() {  // kt匿名内部类 -重写多个方法
             // 使用onJsAlert()拦截js的alert()函数
             override fun onJsAlert(
@@ -102,6 +118,17 @@ class MainActivity : AppCompatActivity() {
                 return super.onJsPrompt(view, url, message, defaultValue, result)
             }
             // ---- Js调用Android 方式3 完 ----
+
+            // 加载进度回调
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                progressbar.progress = newProgress
+            }
+
+            // 获取网页标题
+            override fun onReceivedTitle(view: WebView?, title: String?) {
+                super.onReceivedTitle(view, title)
+                Log.d(TAG, "网页标题:$title")
+            }
         }
 
         // ---- Js调用Android 方式1&2 ----
@@ -113,6 +140,7 @@ class MainActivity : AppCompatActivity() {
         ) // JsToAndroid类对象映射到js的jsToAndroid对象
 
         // 方式2 -通过 WebViewClient的方法shouldOverrideUrlLoading()回调拦截url
+        // WebViewClient主要帮助WebView处理各种通知、请求事件
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 // 步骤1. 根据协议的参数，判断是否是所需要的url
@@ -137,9 +165,36 @@ class MainActivity : AppCompatActivity() {
                     }
                     return true  // 这里必须返回true表示Android端拦截了url
                 }
+
+                // 点击跳转到google拦截
+                if (url.equals("http://www.google.com/")) {
+                    Toast.makeText(this@MainActivity, "国内不能访问google,拦截该url", Toast.LENGTH_SHORT)
+                        .show()
+                    return true     //表示已处理
+                }
                 return super.shouldOverrideUrlLoading(view, url)
+            }
+
+            // 页面加载完成
+            override fun onPageFinished(view: WebView?, url: String?) {
+                progressbar.visibility = View.GONE
+            }
+
+            // 页面开始加载
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                progressbar.visibility = View.VISIBLE
             }
         }
         // ---- Js调用Android 方式1&2 完 ----
+    }
+
+    // back键回调
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        // 点击返回按钮的时候判断有没有上一页
+        if (webView.canGoBack() && keyCode == KeyEvent.KEYCODE_BACK) {
+            webView.goBack()   // goBack()表示返回webView的上一页面
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
     }
 }
