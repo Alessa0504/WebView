@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -196,5 +197,18 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onDestroy() {
+        // 销毁webView，释放资源
+        if (webView != null) {
+            // mimeType为媒体类型，text/html:超文本文件
+            webView.loadDataWithBaseURL(null, "", "text/html", "utf-8", null)
+            webView.clearHistory()
+
+            (webView.parent as ViewGroup).removeView(webView)
+            webView.destroy()
+        }
+        super.onDestroy()
     }
 }
