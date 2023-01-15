@@ -1,5 +1,7 @@
 package com.example.study_webview
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -11,12 +13,14 @@ import android.webkit.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.study_webview.remote.SingleProcessActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.java.simpleName
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -56,6 +60,11 @@ class MainActivity : AppCompatActivity() {
                     Log.d(TAG, resultCallback)
                 }
             }
+        }
+
+        btn_single_process.setOnClickListener {
+            val intent = Intent(this@MainActivity, SingleProcessActivity::class.java)
+            startActivity(intent)
         }
 
         // 需要支持js对话框, 通过设置WebChromeClient对象处理JavaScript的对话框,设置响应js的Alert()函数

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="format-detection" content="telephone = no">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <style type="text/css">
+        .item {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            background-color: #009900;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body style="height: 100%;">
+<script>
+    function post(cmd,para){
+        if(dj.os.isIOS){
+            var message = {};
+            message.meta = {
+                cmd:cmd
+            };
+            message.para = para || {};
+            window.webview.post(message);
+        }else if(window.dj.os.isAndroid){
+            window.webview.post(cmd,JSON.stringify(para));
+        }
+    }
+
+    function callAppToast() {
+        post("showToast", {message: "this is action from html"});
+    }
+
+    function callCalculate() {
+        post("appCalculate", {firstNum: "1", secondNum: "2"});
+    }
+
+</script>
+<div class="item" style="font-size: 18px; color: #ffffff" onclick="callAppToast()">调用: showToast
+</div>
+<div class="item" style="font-size: 18px; color: #ffffff" onclick="callCalculate()">调用:
+    appCalculate
+</div>
+<!--<div class="item" style="font-size: 20px; color: #ffffff" onclick="callAppDialog()">调用: showDialog</div>
+<div class="item" style="font-size: 20px; color: #ffffff" onclick="callAppDataProvider()">调用: appDataProvider</div>-->
+<!--<script src="remote_web.js" charset="utf-8"></script>-->
+</body>
+</html>

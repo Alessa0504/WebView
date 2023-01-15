@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".app.MyApplication"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,6 +16,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Study_WebView"
         tools:targetApi="31">
+        <!--独立进程Activity-->
+        <activity
+            android:name=".remote.SingleProcessActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:process=":remoteWeb" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -24,6 +31,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+<!--    service需要添加android:exported="true" 允许外部应用调用-->
+        <service
+            android:name=".remote.RemoteService"
+            android:enabled="true"
+            android:exported="true" />
     </application>
 
 </manifest>
