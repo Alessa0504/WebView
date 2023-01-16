@@ -36,14 +36,12 @@ class SingleProcessActivity : AppCompatActivity(), IRemoteListener {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate: ")
         setContentView(R.layout.activity_single_process)
         val settings = webViewRemote?.settings
         settings?.javaScriptEnabled = true  //允许js交互
         val jsToAndroid = JsToAndroid()
         jsToAndroid.setListener(this)
-        //注册JS交互接口
-        webViewRemote?.addJavascriptInterface(jsToAndroid, "webview")
+        webViewRemote?.addJavascriptInterface(jsToAndroid, "jsToAndroid")  //注册JS交互接口
         webViewRemote?.loadUrl(CONTENT_SCHEME)
     }
 
@@ -89,9 +87,9 @@ class SingleProcessActivity : AppCompatActivity(), IRemoteListener {
     }
 
     private val serviceConnection = object : ServiceConnection {
-        // 该方法中的IBinder参数就是 RemoteService onBind返回出来的Binder
+        // *该方法中的IBinder参数就是 RemoteService onBind返回出来的Binder
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            //当Service绑定成功时，通过Binder获取到远程服务代理
+            // 当Service绑定成功时，通过Binder获取到远程服务代理
             mRemoteService = CalculateInterface.Stub.asInterface(service)
         }
 

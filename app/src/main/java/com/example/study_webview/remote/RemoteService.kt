@@ -56,7 +56,7 @@ class RemoteService : Service() {
                 Toast.makeText(
                     applicationContext,
                     "remoteWeb进程调用了主进程的doCalculate方法, 计算结果为：$result",
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_SHORT
                 ).show()
             }
             return result

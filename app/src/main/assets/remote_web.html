@@ -22,16 +22,7 @@
 <body style="height: 100%;">
 <script>
     function post(cmd,para){
-        if(dj.os.isIOS){
-            var message = {};
-            message.meta = {
-                cmd:cmd
-            };
-            message.para = para || {};
-            window.webview.post(message);
-        }else if(window.dj.os.isAndroid){
-            window.webview.post(cmd,JSON.stringify(para));
-        }
+        jsToAndroid.post(cmd, JSON.stringify(para));
     }
 
     function callAppToast() {
