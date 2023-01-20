@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.study_webview.remote.SingleProcessActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.InputStream
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,7 +37,7 @@ class MainActivity : AppCompatActivity() {
          * LOAD_NO_CACHE: 不使用缓存，只从网络获取数据.
          * LOAD_CACHE_ELSE_NETWORK，只要本地有，无论是否过期，或者no-cache，都使用缓存中的数据。
          */
-        webSettings.cacheMode = WebSettings.LOAD_NO_CACHE //不使用缓存，只从网络获取数据.
+        webSettings.cacheMode = WebSettings.LOAD_NO_CACHE  // 不使用缓存，只从网络获取数据
 
         //支持屏幕缩放
         webSettings.setSupportZoom(true)
@@ -193,6 +194,34 @@ class MainActivity : AppCompatActivity() {
             // 页面开始加载
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 progressbar.visibility = View.VISIBLE
+            }
+
+            // 覆写shouldInterceptRequest
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                // 步骤1:判断拦截资源的条件，即判断url里的图片资源的文件名
+                // 图片的资源文件名为:pcd_e7aeae7e7e413139a48047d2ebcd1ce9.gif
+                if (request?.url.toString().contains("pcd_e7aeae7e7e413139a48047d2ebcd1ce9.gif")) {
+                    // 步骤2:创建一个输入流
+                    var stream: InputStream? = null
+                    try {
+                        // 步骤3:打开需要替换的资源(存放在assets文件夹里)
+                        // 在app/src/main下创建一个assets文件夹
+                        // assets文件夹里再创建一个images文件夹,放一个error.png的图片
+                        stream = applicationContext.assets.open("images/error.png")
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                    // 步骤4:替换资源
+                    // 参数1：http请求里该图片的Content-Type,此处图片为image/png  参数2：编码类型  参数3：存放着替换资源的输入流（上面创建的那个）
+                    return WebResourceResponse(
+                        "image/png",
+                        "utf-8", stream
+                    )
+                }
+                return super.shouldInterceptRequest(view, request)
             }
         }
         // ---- Js调用Android 方式1&2 完 ----
