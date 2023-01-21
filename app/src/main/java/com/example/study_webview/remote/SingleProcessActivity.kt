@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.os.RemoteException
 import android.util.Log
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -89,6 +90,12 @@ class SingleProcessActivity : AppCompatActivity(), IRemoteListener {
     private val serviceConnection = object : ServiceConnection {
         // *该方法中的IBinder参数就是 RemoteService onBind返回出来的Binder
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            try {
+                // 设置死亡代理
+                service?.linkToDeath(deathRecipient, 0)
+            } catch (e: RemoteException) {
+                e.printStackTrace()
+            }
             // 当Service绑定成功时，通过Binder获取到远程服务代理
             mRemoteService = CalculateInterface.Stub.asInterface(service)
         }
@@ -96,6 +103,23 @@ class SingleProcessActivity : AppCompatActivity(), IRemoteListener {
         override fun onServiceDisconnected(name: ComponentName?) {
             mRemoteService = null
         }
+    }
+
+    private val deathRecipient = object : IBinder.DeathRecipient {
+        override fun binderDied() {
+            // 解绑
+            if (mRemoteService != null) {
+                mRemoteService?.asBinder()?.unlinkToDeath(this, 0)
+                mRemoteService = null
+            }
+            // 断开重新绑定
+            bindServiceByAidl()
+        }
+    }
+
+    private fun bindServiceByAidl() {
+        val intent = Intent(this@SingleProcessActivity, RemoteService::class.java)
+        bindService(intent, serviceConnection, BIND_AUTO_CREATE)
     }
 
     override fun deal(cmd: String, param: String) {
